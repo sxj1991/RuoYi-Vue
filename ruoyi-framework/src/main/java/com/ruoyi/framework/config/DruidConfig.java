@@ -40,6 +40,12 @@ public class DruidConfig
         return druidProperties.dataSource(dataSource);
     }
 
+    /**
+     * @ConfigurationProperties 通过配置文件进行绑定，然后将此Bean归还给容器 配置@Bean使用
+     * @ConditionalOnProperty 该注解作用 havingValue根据这个值和配置文件比较 是否启动该配置
+     * @param druidProperties
+     * @return
+     */
     @Bean
     @ConfigurationProperties("spring.datasource.druid.slave")
     @ConditionalOnProperty(prefix = "spring.datasource.druid.slave", name = "enabled", havingValue = "true")
@@ -75,6 +81,7 @@ public class DruidConfig
         }
         catch (Exception e)
         {
+            //这里不捕捉堆栈信息 因为每次启动 salve数据源都会找不到
         }
     }
 

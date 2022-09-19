@@ -41,6 +41,7 @@ public class DataSourceAspect
 
         if (StringUtils.isNotNull(dataSource))
         {
+            //设置当前线程动态数据源
             DynamicDataSourceContextHolder.setDataSourceType(dataSource.value().name());
         }
 
@@ -64,9 +65,10 @@ public class DataSourceAspect
         DataSource dataSource = AnnotationUtils.findAnnotation(signature.getMethod(), DataSource.class);
         if (Objects.nonNull(dataSource))
         {
+            //获取方法上的注解
             return dataSource;
         }
-
+        //获取类上的注解
         return AnnotationUtils.findAnnotation(signature.getDeclaringType(), DataSource.class);
     }
 }
