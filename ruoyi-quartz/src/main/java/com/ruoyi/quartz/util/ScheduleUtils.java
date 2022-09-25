@@ -35,6 +35,7 @@ public class ScheduleUtils
     private static Class<? extends Job> getQuartzJobClass(SysJob sysJob)
     {
         boolean isConcurrent = "0".equals(sysJob.getConcurrent());
+        //根据是否支持并发来选择 Quartz类型
         return isConcurrent ? QuartzJobExecution.class : QuartzDisallowConcurrentExecution.class;
     }
 
@@ -59,19 +60,26 @@ public class ScheduleUtils
      */
     public static void createScheduleJob(Scheduler scheduler, SysJob job) throws SchedulerException, TaskException
     {
+        // 支持并发返回 QuartzJobExecution.class
         Class<? extends Job> jobClass = getQuartzJobClass(job);
         // 构建job信息
         Long jobId = job.getJobId();
         String jobGroup = job.getJobGroup();
-        JobDetail jobDetail = JobBuilder.newJob(jobClass).withIdentity(getJobKey(jobId, jobGroup)).build();
+        JobDetail jobDetail = JobBuilder
+                .newJob(jobClass)
+                .withIdentity(getJobKey(jobId, jobGroup))
+                .build();
 
         // 表达式调度构建器
         CronScheduleBuilder cronScheduleBuilder = CronScheduleBuilder.cronSchedule(job.getCronExpression());
         cronScheduleBuilder = handleCronScheduleMisfirePolicy(job, cronScheduleBuilder);
 
         // 按新的cronExpression表达式构建一个新的trigger
-        CronTrigger trigger = TriggerBuilder.newTrigger().withIdentity(getTriggerKey(jobId, jobGroup))
-                .withSchedule(cronScheduleBuilder).build();
+        CronTrigger trigger = TriggerBuilder
+                .newTrigger()
+                .withIdentity(getTriggerKey(jobId, jobGroup))
+                .withSchedule(cronScheduleBuilder)
+                .build();
 
         // 放入参数，运行时的方法可以获取
         jobDetail.getJobDataMap().put(ScheduleConstants.TASK_PROPERTIES, job);
@@ -105,6 +113,7 @@ public class ScheduleUtils
     {
         switch (job.getMisfirePolicy())
         {
+            //根据枚举类信息 给CronScheduleBuilder对象设置执行策略
             case ScheduleConstants.MISFIRE_DEFAULT:
                 return cb;
             case ScheduleConstants.MISFIRE_IGNORE_MISFIRES:
@@ -130,11 +139,14 @@ public class ScheduleUtils
         //截取符号(前的字符 也就是组件名和方法名
         String packageName = StringUtils.substringBefore(invokeTarget, "(");
         int count = StringUtils.countMatches(packageName, ".");
+        //匹配符号 如果有展示数量 如果有两个"." 判断是否包含包名以及判断是否和Constants.JOB_WHITELIST_STR一致
         if (count > 1)
         {
             return StringUtils.containsAnyIgnoreCase(invokeTarget, Constants.JOB_WHITELIST_STR);
         }
         Object obj = SpringUtils.getBean(StringUtils.split(invokeTarget, ".")[0]);
-        return StringUtils.containsAnyIgnoreCase(obj.getClass().getPackage().getName(), Constants.JOB_WHITELIST_STR);
+        //name 包路径信息 com.ruoyi.quartz.task 判断是否和Constants.JOB_WHITELIST_STR一致
+        String name = obj.getClass().getPackage().getName();
+        return StringUtils.containsAnyIgnoreCase(name, Constants.JOB_WHITELIST_STR);
     }
 }

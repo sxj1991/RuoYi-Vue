@@ -22,6 +22,7 @@ public class JobInvokeUtil
      */
     public static void invokeMethod(SysJob sysJob) throws Exception
     {
+        //反射获取目标字符串 注入的名称以及方法、参数
         String invokeTarget = sysJob.getInvokeTarget();
         String beanName = getBeanName(invokeTarget);
         String methodName = getMethodName(invokeTarget);

@@ -9,8 +9,9 @@ import com.ruoyi.quartz.domain.SysJob;
  * @author ruoyi
  *
  */
-public class QuartzJobExecution extends AbstractQuartzJob
-{
+public class QuartzJobExecution extends AbstractQuartzJob{
+
+    //quartz 会执行该方法
     @Override
     protected void doExecute(JobExecutionContext context, SysJob sysJob) throws Exception
     {

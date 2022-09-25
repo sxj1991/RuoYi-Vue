@@ -180,7 +180,7 @@ public class SysJobServiceImpl implements ISysJobService
         Long jobId = job.getJobId();
         String jobGroup = job.getJobGroup();
         SysJob properties = selectJobById(job.getJobId());
-        // 参数
+        // 构造scheduler 第三方库需要的参数jobKey dataMap
         JobDataMap dataMap = new JobDataMap();
         dataMap.put(ScheduleConstants.TASK_PROPERTIES, properties);
         JobKey jobKey = ScheduleUtils.getJobKey(jobId, jobGroup);
@@ -201,10 +201,12 @@ public class SysJobServiceImpl implements ISysJobService
     @Transactional(rollbackFor = Exception.class)
     public int insertJob(SysJob job) throws SchedulerException, TaskException
     {
+        //新增状态为暂停
         job.setStatus(ScheduleConstants.Status.PAUSE.getValue());
         int rows = jobMapper.insertJob(job);
         if (rows > 0)
         {
+            //新增成功 创建调度器
             ScheduleUtils.createScheduleJob(scheduler, job);
         }
         return rows;

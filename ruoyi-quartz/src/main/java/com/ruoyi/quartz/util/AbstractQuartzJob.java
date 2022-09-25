@@ -34,14 +34,17 @@ public abstract class AbstractQuartzJob implements Job
     public void execute(JobExecutionContext context) throws JobExecutionException
     {
         SysJob sysJob = new SysJob();
+        // 获取jobDetail.getJobDataMap().put(ScheduleConstants.TASK_PROPERTIES, job)放入的sysjob对象
         BeanUtils.copyBeanProp(sysJob, context.getMergedJobDataMap().get(ScheduleConstants.TASK_PROPERTIES));
         try
         {
+            //静态代理作用
             before(context, sysJob);
             if (sysJob != null)
             {
                 doExecute(context, sysJob);
             }
+            //记录日志
             after(context, sysJob, null);
         }
         catch (Exception e)
