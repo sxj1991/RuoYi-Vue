@@ -127,6 +127,7 @@ public class ScheduleUtils
      */
     public static boolean whiteList(String invokeTarget)
     {
+        //截取符号(前的字符 也就是组件名和方法名
         String packageName = StringUtils.substringBefore(invokeTarget, "(");
         int count = StringUtils.countMatches(packageName, ".");
         if (count > 1)

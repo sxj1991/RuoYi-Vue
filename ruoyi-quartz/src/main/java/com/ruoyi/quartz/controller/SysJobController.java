@@ -41,6 +41,12 @@ public class SysJobController extends BaseController
 
     /**
      * 查询定时任务列表
+     * SysJob 对象根据以下4个属性查询
+     * jobName  任务名称
+     * jobGroup 任务组名
+     * status 任务状态
+     * invokeTarget 调用目标字符串 即ryTask.ryNoParams 注入的组件名称 方法名以及参数
+     * cronExpression 表达式信息 sysJob会保存 定时任务相关的数据 数据量不大情况下替代quartz表(用内存方式使用quartz)
      */
     @PreAuthorize("@ss.hasPermi('monitor:job:list')")
     @GetMapping("/list")
@@ -71,7 +77,8 @@ public class SysJobController extends BaseController
     @GetMapping(value = "/{jobId}")
     public AjaxResult getInfo(@PathVariable("jobId") Long jobId)
     {
-        return AjaxResult.success(jobService.selectJobById(jobId));
+        SysJob sysJob = jobService.selectJobById(jobId);
+        return AjaxResult.success(sysJob);
     }
 
     /**
@@ -82,10 +89,12 @@ public class SysJobController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SysJob job) throws SchedulerException, TaskException
     {
+        //判断表达式
         if (!CronUtils.isValid(job.getCronExpression()))
         {
             return error("新增任务'" + job.getJobName() + "'失败，Cron表达式不正确");
         }
+        //containsIgnoreCase判断字符串rmi:是否存在 目标字符串不允许'rmi'调用
         else if (StringUtils.containsIgnoreCase(job.getInvokeTarget(), Constants.LOOKUP_RMI))
         {
             return error("新增任务'" + job.getJobName() + "'失败，目标字符串不允许'rmi'调用");
