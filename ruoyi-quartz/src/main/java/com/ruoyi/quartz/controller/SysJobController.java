@@ -77,8 +77,7 @@ public class SysJobController extends BaseController
     @GetMapping(value = "/{jobId}")
     public AjaxResult getInfo(@PathVariable("jobId") Long jobId)
     {
-        SysJob sysJob = jobService.selectJobById(jobId);
-        return AjaxResult.success(sysJob);
+        return success(jobService.selectJobById(jobId));
     }
 
     /**
@@ -89,12 +88,10 @@ public class SysJobController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SysJob job) throws SchedulerException, TaskException
     {
-        //判断表达式
         if (!CronUtils.isValid(job.getCronExpression()))
         {
             return error("新增任务'" + job.getJobName() + "'失败，Cron表达式不正确");
         }
-        //containsIgnoreCase判断字符串rmi:是否存在 目标字符串不允许'rmi'调用
         else if (StringUtils.containsIgnoreCase(job.getInvokeTarget(), Constants.LOOKUP_RMI))
         {
             return error("新增任务'" + job.getJobName() + "'失败，目标字符串不允许'rmi'调用");
